@@ -1,3 +1,12 @@
+html{
+    height: 100%;
+    background-image: url("../assets/background.png");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
 body {
     margin: 0;
 }
