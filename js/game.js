@@ -29,6 +29,7 @@ let score = 0;
 let scoreText;
 let sizeText;
 let gameOver = false;
+let mainText;
 
 let positions = [
     { x: 100, y: 300 },
@@ -135,6 +136,7 @@ function create() {
     this.physics.add.collider(player, platforms);
 
     player.anims.play('idle');
+    player.setTint(0x00ff00)
 
     ghosts = this.physics.add.group();
 
@@ -194,12 +196,28 @@ function create() {
         fontFamily: 'Consolas'
     });
 
+    let maxScore = localStorage.getItem('score') || '0';
+
+    mainText = this.add.text(225, 250, 'Eat ghosts and \navoid disappearing!\nMax score: ' + maxScore, {
+        fontSize: '32px',
+        fill: '#FFFFFF',
+        font: 'bold 32px Consolas',
+        align: 'center'
+    });
+
+    let interval = setInterval(() => {
+        if(mainText.alpha != 0){
+            mainText.setAlpha(mainText.alpha - 0.01);
+        }else{
+            clearInterval(interval);
+        }
+    }, 40);
 }
 
 let inProgress = false;
 
 function update() {
-    if(gameOver){
+    if (gameOver) {
         game.physics.pause();
     }
     const cursors = this.input.keyboard.createCursorKeys();
@@ -242,14 +260,22 @@ function decrease() {
     let percentage = Math.round((ratio - 1) * 100);
     sizeText.setText(`Size: ${percentage}%`);
     sizeText.setFill(ratio <= 1.5 ? '#ab0000' : '#ffffff');
-    let newTimeout = (2000 / ratio) - score/5;
+    let newTimeout = (2000 / ratio) - score / 5;
     // console.log(newTimeout);
-    if(ratio < 1){
+    if (ratio < 1) {
+        mainText.setText(`You just disappeared!\nScore: ${score}`);
+        mainText.setAlpha(1);
+        mainText.setColor('#ab0000');
         player.setTint(0xff0000);
+        let oldScore = localStorage.getItem('score') || "0";
+        if(score > Number(oldScore)){
+            localStorage.setItem('score', String(score));
+            mainText.setText(mainText.text + '\nNew record!');
+        }
         setTimeout(() => {
-            gameOver = true;            
+            gameOver = true;
         }, 100);
-    }else{
+    } else {
         setTimeout(() => {
             decrease();
         }, Math.abs(newTimeout));
