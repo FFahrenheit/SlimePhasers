@@ -25,6 +25,10 @@ let ratio = 2;
 let minimize;
 let ghosts;
 let flag = {};
+let score = 0;
+let scoreText;
+let sizeText;
+let gameOver = false;
 
 let positions = [
     { x: 100, y: 300 },
@@ -129,19 +133,25 @@ function create() {
     })
 
     this.physics.add.collider(player, platforms);
-    player.body.setGravityY(0);
 
     player.anims.play('idle');
 
     ghosts = this.physics.add.group();
 
     this.physics.add.collider(player, ghosts, (player, ghost) => {
-        if(typeof flag[ghost] == 'undefined' || !flag[ghost]){
+        if (typeof flag[ghost] == 'undefined' || !flag[ghost]) {
             flag[ghost] = true;
             ghost.setBounce(0);
             ghost.body.stop();
             ghost.body.moves = false;
             ghost.anims.play('death', true);
+            score += 10;
+            ratio += 0.2;
+            player.setScale(ratio);
+            let percentage = Math.round((ratio - 1) * 100);
+            scoreText.setText('Score: ' + score);
+            sizeText.setText(`Size: ${percentage}%`);
+            sizeText.setFill(ratio <= 1.5 ? '#ab0000' : '#ffffff');
             setTimeout(() => {
                 console.log('recover')
                 flag[ghost] = false;
@@ -159,7 +169,7 @@ function create() {
     }, null, this);
 
     for (let i = 0; i < 3; i++) {
-        let ghost = ghosts.create(Phaser.Math.Between(0,800), 0, 'ghost');
+        let ghost = ghosts.create(Phaser.Math.Between(0, 800), 0, 'ghost');
         ghost.setBounce(1);
         ghost.body.setAllowGravity(false);
         ghost.setVelocity(Phaser.Math.Between(-200 * ratio, 200 * ratio), Phaser.Math.Between(-100 * ratio, 100 * ratio));
@@ -168,17 +178,30 @@ function create() {
     }
 
 
-    minimize = setInterval(() => {
-        player.setScale(ratio);
-        // ratio = ratio - 0.1;
-
+    setTimeout(() => {
+        decrease();
     }, 2000);
+
+    scoreText = this.add.text(16, 16, 'Score: 0', {
+        fontSize: '32px',
+        fill: '#FFFFFF',
+        fontFamily: 'Consolas'
+    });
+
+    sizeText = this.add.text(600, 16, 'Size: 100%', {
+        fontSize: '32px',
+        fill: '#FFFFFF',
+        fontFamily: 'Consolas'
+    });
 
 }
 
 let inProgress = false;
 
 function update() {
+    if(gameOver){
+        game.physics.pause();
+    }
     const cursors = this.input.keyboard.createCursorKeys();
 
     if (cursors.left.isDown) {
@@ -210,5 +233,25 @@ function update() {
             }
             inProgress = false;
         }, 400);
+    }
+}
+
+function decrease() {
+    ratio = ratio - 0.1;
+    player.setScale(ratio);
+    let percentage = Math.round((ratio - 1) * 100);
+    sizeText.setText(`Size: ${percentage}%`);
+    sizeText.setFill(ratio <= 1.5 ? '#ab0000' : '#ffffff');
+    let newTimeout = (2000 / ratio) - score/5;
+    // console.log(newTimeout);
+    if(ratio < 1){
+        player.setTint(0xff0000);
+        setTimeout(() => {
+            gameOver = true;            
+        }, 100);
+    }else{
+        setTimeout(() => {
+            decrease();
+        }, Math.abs(newTimeout));
     }
 }
