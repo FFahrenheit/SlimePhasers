@@ -33,6 +33,7 @@ let mainText;
 let backgroundMusic;
 let deadSound;
 let downSound;
+let over = false;
 
 let positions = [
     { x: 100, y: 300 },
@@ -156,7 +157,7 @@ function create() {
     this.physics.add.collider(player, platforms);
 
     player.anims.play('idle');
-    player.setTint(0x00ff00)
+    // player.setTint(0x00ff00)
 
     ghosts = this.physics.add.group();
 
@@ -238,8 +239,13 @@ function create() {
 let inProgress = false;
 
 function update() {
+    if(over){
+        return;
+    }
     if (gameOver) {
         game.physics.pause();
+        over = true;
+        return;
     }
     const cursors = this.input.keyboard.createCursorKeys();
 
@@ -260,7 +266,7 @@ function update() {
         player.anims.play(inProgress ? 'down' : 'idle', true);
     }
 
-    if (cursors.down.isDown && (player.body.touching.down || player.y >= 585) && !inProgress) {
+    if (cursors.down.isDown && (player.body.touching.down || player.y >= 600 - (ratio*30/2)) && !inProgress) {
         player.anims.play('down', false);
         downSound.play();
         inProgress = true;
