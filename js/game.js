@@ -30,6 +30,9 @@ let scoreText;
 let sizeText;
 let gameOver = false;
 let mainText;
+let backgroundMusic;
+let deadSound;
+let downSound;
 
 let positions = [
     { x: 100, y: 300 },
@@ -67,9 +70,26 @@ function preload() {
         frameWidth: 100,
         frameHeight: 100
     });
+
+    this.load.audio('background', 
+    ['assets/audio/background.mp3']);
+
+    this.load.audio('dead',
+    ['assets/audio/death.mp3']);
+
+    this.load.audio('pop',
+    ['assets/audio/pop.mp3']);
 }
 
 function create() {
+
+    backgroundMusic = this.sound.add('background',{ loop: true, volume: 0.5 });
+    backgroundMusic.play();
+
+    deadSound = this.sound.add('dead', { loop: false });
+
+    downSound = this.sound.add('pop', { loop: false });
+    
     this.add.image(400, 300, 'forest');
 
     platforms = this.physics.add.staticGroup();
@@ -142,6 +162,7 @@ function create() {
 
     this.physics.add.collider(player, ghosts, (player, ghost) => {
         if (typeof flag[ghost] == 'undefined' || !flag[ghost]) {
+            deadSound.play();
             flag[ghost] = true;
             ghost.setBounce(0);
             ghost.body.stop();
@@ -241,6 +262,7 @@ function update() {
 
     if (cursors.down.isDown && (player.body.touching.down || player.y >= 585) && !inProgress) {
         player.anims.play('down', false);
+        downSound.play();
         inProgress = true;
 
         setTimeout(() => {
